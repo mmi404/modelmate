@@ -1,0 +1,40 @@
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- env / secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+!infra/**/*.example
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.pnpm-store/
+coverage/
+playwright-report/
+test-results/
+
+# --- Java / Maven ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+!**/src/**/*.jar
+hs_err_pid*
+
+# --- Docker / build ---
+*.log
+.docker-data/
+pgdata/

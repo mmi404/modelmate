@@ -1,0 +1,169 @@
+# ModelMate v2 — Master Task List
+
+Source of truth for progress. Check items off as they land. Each **▣ commit**
+marker is a real git commit point — we commit at every stage, not at the end.
+
+Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs input)
+
+---
+
+## Phase 0 — Planning & repo setup  ← *current*
+
+- [x] Read `version1.0` (entities, controllers, schema, seed) + design PDFs + proposal
+- [x] Decide stack, DB, scope, repo layout (see `docs/DECISIONS.md`)
+- [x] Monorepo skeleton, `.gitignore`, `README.md`
+- [x] `docs/ARCHITECTURE.md`
+- [x] `docs/DATA-MODEL.md`
+- [x] `docs/API.md`
+- [x] `docs/DECISIONS.md`, `docs/DEPLOYMENT.md`, `docs/SEO-GEO.md`
+- [x] `TASKS.md` (this file)
+- [x] `docker-compose.yml` (postgres + adminer + mailhog) + `.env.example`
+- [x] **▣ commit:** `chore: scaffold monorepo, architecture + API docs, task list`
+- [!] O-1/O-2/O-3 open decisions — GitHub repo, VPS/domain, SMTP (needed Phase 9)
+
+## Phase 1 — Backend foundation
+
+- [ ] Spring Boot 3.4 project (Java 21): web, validation, data-jpa, security,
+      flyway, postgresql, springdoc-openapi, jjwt, lombok; Testcontainers for tests
+- [ ] Maven wrapper, `.mvn`, package structure per `ARCHITECTURE.md §3`
+- [ ] `application.yml` + `application-dev.yml` + `application-prod.yml`,
+      all config env-driven, `ddl-auto: validate`
+- [ ] `common/`: `BaseEntity` (id, timestamps), `ApiError`, `GlobalExceptionHandler`,
+      `PageResponse<T>`, slug generator, request-id filter
+- [ ] `OpenApiConfig`, `CorsConfig` (env origins), `/actuator/health` exposed
+- [ ] Flyway `V1__initial_schema.sql` — full schema from `docs/DATA-MODEL.md`
+- [ ] Entities + repositories (proper `@ManyToOne`, no `@Transient` soup)
+- [ ] `V2__seed_reference_data.sql` — 12 categories + ~12 approved models + 1 admin user
+- [ ] Boots clean against Docker Postgres; Swagger renders; health green
+- [ ] **▣ commit:** `feat(backend): project skeleton, schema, entities, seed`
+
+## Phase 2 — Backend auth & security
+
+- [ ] `JwtService` (sign/verify, configurable TTL), `JwtAuthFilter`, `@CurrentUser`
+- [ ] `SecurityConfig`: stateless, public matchers, `/admin/**` = ADMIN, BCrypt(12)
+- [ ] `AuthController` + `AuthService`: register, login, me, logout
+- [ ] Password reset: forgot → hashed 6-digit code + email (MailHog),
+      verify-code → reset ticket, reset-password; expiry + attempt cap
+- [ ] `MailConfig` + templated email
+- [ ] `RateLimitConfig` (Bucket4j) + filter on auth endpoints
+- [ ] Turnstile verification service behind `security.captcha.enabled` flag
+- [ ] Tests: register/login/refresh, reset flow, rate-limit 429, role enforcement
+- [ ] **▣ commit:** `feat(backend): JWT auth, password reset, rate limiting`
+
+## Phase 3 — Backend domain APIs
+
+- [ ] **Categories:** list (+computed modelCount), detail, models-in-category
+- [ ] **Models:** list/filter/sort/paginate, detail (with aggregate ratings),
+      trending, search typeahead, names, compare, submit (→PENDING)
+- [ ] **Reviews/Problems:** list reviews, list problems, create (validation:
+      ratings required for REVIEW), edit (author), delete (author/admin);
+      recompute model aggregates
+- [ ] **Leaderboard:** ranked query with category filter + minReviews
+- [ ] **Discussions:** list/filter by tag/sort, detail, create, tags, stats
+- [ ] **Replies:** list (threaded one level), create
+- [ ] **Votes:** upsert + delete, polymorphic, transactional counter updates
+- [ ] **Users/Profile:** public profile, contributions, update me, my contributions
+- [ ] **Admin:** pending list, approve (gen slug), reject (reason), hide review, stats
+- [ ] DTOs + MapStruct (or manual) mappers; every write endpoint `@Valid`
+- [ ] Integration test per controller (Testcontainers)
+- [ ] **▣ commit** per module (`feat(backend): models API`, `feat(backend): discussions & votes`, …)
+
+## Phase 4 — Frontend foundation
+
+- [ ] Next.js 15 App Router + TS + Tailwind + ESLint + Prettier; pnpm
+- [ ] shadcn/ui init; port needed primitives from `version1.0/frontend/src/components/ui`
+- [ ] Design tokens (dark theme from PDF) in `globals.css` / Tailwind config;
+      self-hosted Inter
+- [ ] App shell: `Navbar` (70px, search, auth-aware), `Sidebar` (250px, authed),
+      `Footer` (60px); responsive (mobile drawer)
+- [ ] Typed API client: base URL from env, error normalisation, cookie creds
+- [ ] `middleware.ts` route protection; `AuthProvider`; `/api/session` route handler
+      (set/clear httpOnly cookie); `getCurrentUser()` server util
+- [ ] TanStack Query provider, toast (sonner), theme provider
+- [ ] `.env.example` (`NEXT_PUBLIC_SITE_URL`, `BACKEND_INTERNAL_URL`, …)
+- [ ] **▣ commit:** `feat(frontend): Next.js shell, design system, auth plumbing`
+
+## Phase 5 — Frontend pages
+
+- [ ] **Auth:** `/login`, `/register` (two-column per PDF), `/forgot-password` (3 steps)
+- [ ] **Home `/`:** trending carousel, latest reviews list, popular categories grid
+- [ ] **Categories `/categories`** + **`/categories/[slug]`** (vertical model cards, mini-ratings)
+- [ ] **Model detail `/models/[slug]`:** overview, 5-criteria rating bars, reviews
+      (comment style), problems (accordion, by severity), vote buttons
+- [ ] **Post review/problem `/submit-review`:** model typeahead, type toggle,
+      star inputs, severity, textarea
+- [ ] **Compare `/compare`:** 2–3 model pickers, side-by-side rating table
+- [ ] **Leaderboard `/leaderboard`:** ranked table, category filter, top-3 highlight
+- [ ] **Community `/community`:** discussion list, tag filter, stats sidebar, tag cloud
+- [ ] **Discussion detail `/community/[id]`:** thread, replies, nested reply, voting
+- [ ] **New discussion `/community/new`**
+- [ ] **Submit model `/submit-model`**
+- [ ] **Profile `/profile` + `/users/[id]`:** info + contributions list
+- [ ] **Admin `/admin`:** pending submissions, approve/reject, hide reviews, stats
+- [ ] Loading / empty / error states for every page; `not-found.tsx`, `error.tsx`
+- [ ] **▣ commit** per page group
+
+## Phase 6 — Integration, polish, hardening
+
+- [ ] Every page wired to the real API; zero mock data
+- [ ] Full click-through of each user journey against running backend
+- [ ] Responsive QA at 360 / 768 / 1024 / 1440
+- [ ] Accessibility pass (keyboard, focus, contrast, aria, screen-reader smoke)
+- [ ] Security headers (Next `headers()` + CSP), cookie flags, URL scheme allowlist,
+      secrets audit, dependency audit (`pnpm audit`, `mvn dependency-check`)
+- [ ] Perf: `next/image`, code-split, caching headers, Lighthouse ≥ 90 all pages
+- [ ] Consistent error toasts, form validation messages, disabled/pending buttons
+- [ ] **▣ commit:** `chore: integration polish, a11y, security headers, perf`
+
+## Phase 7 — SEO / GEO / bot protection
+
+- [ ] `generateMetadata` per route; canonical URLs; OG + Twitter tags
+- [ ] Dynamic `opengraph-image` for model pages
+- [ ] JSON-LD: WebSite, SoftwareApplication+AggregateRating, Review, BreadcrumbList, Organization
+- [ ] `sitemap.ts` (dynamic), `robots.ts`, `/llms.txt` + `/llms-full.txt`
+- [ ] Confirm SSR/ISR revalidate values; verify review text is in server HTML
+- [ ] Bucket4j limits tuned per `SEO-GEO.md`; `429` + `Retry-After`
+- [ ] Turnstile wired on register/login/forgot/submit/new-discussion
+- [ ] Cloudflare config notes: proxy, cache rules, Bot Fight, WAF, rate-limit rule
+- [ ] `Last-Modified`/`ETag` on public GET API responses
+- [ ] **▣ commit:** `feat: SEO metadata, JSON-LD, sitemap, GEO, rate-limit tuning`
+
+## Phase 8 — Dockerize
+
+- [ ] `backend/Dockerfile` (multi-stage, JRE 21), `.dockerignore`
+- [ ] `frontend/Dockerfile` (multi-stage, `output: standalone`), `.dockerignore`
+- [ ] `docker-compose.prod.yml` (frontend, backend, postgres, caddy) + healthchecks
+- [ ] `infra/Caddyfile` (or shared-proxy site block) — path routing + TLS + headers
+- [ ] Full stack runs locally via prod compose; migrations apply; smoke test green
+- [ ] **▣ commit:** `build: production Dockerfiles, compose, Caddy config`
+
+## Phase 9 — CI/CD & first deploy
+
+- [!] Create GitHub repo (O-1); provide VPS host/user/key + domain (O-2); SMTP (O-3)
+- [ ] `.github/workflows/ci.yml` — lint/typecheck/test/build, path-filtered
+- [ ] `.github/workflows/deploy.yml` — build+push GHCR, SSH deploy, migrate, health-gate
+- [ ] `infra/bootstrap.sh` — VPS first-time setup
+- [ ] GitHub secrets configured; `/opt/modelmate/.env` on VPS
+- [ ] DNS → Cloudflare → VPS; TLS issued
+- [ ] First deploy; smoke test all public + one authed flow in prod
+- [ ] Nightly `pg_dump` cron + prune
+- [ ] **▣ commit:** `ci: CI + deploy pipelines, VPS bootstrap`
+
+## Phase 10 — Post-deploy
+
+- [ ] Uptime check (Cloudflare / UptimeRobot); error-rate glance
+- [ ] `docs/DEPLOYMENT.md` runbook finalised with real values
+- [ ] `README` quickstart verified from clean clone
+- [ ] Short handover / "how to operate" note
+- [ ] **▣ commit:** `docs: finalise runbook and handover`
+
+---
+
+## Parking lot (post-v1, from the proposal's "Future Recommendation")
+
+- AI-generated review summaries per model
+- Smart recommendations from user preferences
+- "Model Battle" — user-voted head-to-head
+- New-model alerts / notifications + email digest
+- Model logo / avatar uploads (Cloudflare R2) if deferred from Phase 5
+- Mobile app
