@@ -47,14 +47,23 @@ backend has a 60 MB jar and `target/` committed, and large swaths are
 uncommitted and untested. Cost of cleanup ≈ cost of rebuild, and the target
 stack is different (Next.js). v1 is kept read-only as a feature/reference spec.
 
+## ADR-010 — Deployment specifics (resolved 2026-09-04)
+
+- **Repo:** overwrite the existing `github.com/mmi404/modelmate` — this v2 tree
+  replaces its history. Push with a fresh initial commit; the old `modelmate.git`
+  content is preserved only in `version1.0/.git` locally.
+- **Host:** the shared VPS `srv1385837`, registering with its existing shared
+  Caddy (per ADR-009).
+- **Domain:** `modelmate.mmi404.com` (Cloudflare-proxied).
+- **Object storage:** Cloudflare R2 for model logos and user avatars (S3 API,
+  same Cloudflare account, zero egress) — built in Phase 5.
+- **Production email:** deferred. Password-reset flow is built and works against
+  MailHog in dev; prod runs with mail disabled (the endpoint returns 204 and
+  logs the code server-side) until an SMTP/API provider is chosen. Tracked in
+  the parking lot.
+
 ---
 
-## Open decisions (need input before their phase)
+## Open decisions
 
-| # | Question | Needed by |
-|---|---|---|
-| O-1 | GitHub repo: new `modelmate` repo, or overwrite existing `github.com/mmi404/modelmate`? | Phase 9 (CI/CD) |
-| O-2 | Deploy target: the shared VPS `srv1385837`, or a different host? Domain name? | Phase 9 |
-| O-3 | Production SMTP provider for password-reset email (Resend / Brevo / Mailgun / SES)? | Phase 2 or Phase 9 |
-| O-4 | Use Cloudflare (assumed yes — used on other projects)? Account available for this domain? | Phase 7 |
-| O-5 | Image uploads (model logos, avatars) — Cloudflare R2, or defer and use URL-only for v1? | Phase 5 |
+*All resolved — see ADR-010. Production email provider is deferred (parking lot).*

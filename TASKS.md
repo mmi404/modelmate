@@ -19,7 +19,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 - [x] `TASKS.md` (this file)
 - [x] `docker-compose.yml` (postgres + adminer + mailhog) + `.env.example`
 - [x] **▣ commit:** `chore: scaffold monorepo, architecture + API docs, task list`
-- [!] O-1/O-2/O-3 open decisions — GitHub repo, VPS/domain, SMTP (needed Phase 9)
+- [x] Resolve open decisions → ADR-010 (overwrite `mmi404/modelmate`, shared VPS
+      `srv1385837`, domain `modelmate.mmi404.com`, Cloudflare R2 storage, prod
+      email deferred)
 
 ## Phase 1 — Backend foundation
 
@@ -139,12 +141,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 9 — CI/CD & first deploy
 
-- [!] Create GitHub repo (O-1); provide VPS host/user/key + domain (O-2); SMTP (O-3)
+- [ ] Force-push v2 tree to `github.com/mmi404/modelmate` (replaces old history)
 - [ ] `.github/workflows/ci.yml` — lint/typecheck/test/build, path-filtered
 - [ ] `.github/workflows/deploy.yml` — build+push GHCR, SSH deploy, migrate, health-gate
-- [ ] `infra/bootstrap.sh` — VPS first-time setup
-- [ ] GitHub secrets configured; `/opt/modelmate/.env` on VPS
-- [ ] DNS → Cloudflare → VPS; TLS issued
+- [ ] `infra/bootstrap.sh` — VPS `srv1385837` first-time setup, add site block to shared Caddy
+- [ ] GitHub secrets configured; `/opt/modelmate/.env` on VPS (user supplies SSH key + R2 creds)
+- [ ] Cloudflare: `modelmate.mmi404.com` DNS → VPS, proxied; TLS via shared Caddy
 - [ ] First deploy; smoke test all public + one authed flow in prod
 - [ ] Nightly `pg_dump` cron + prune
 - [ ] **▣ commit:** `ci: CI + deploy pipelines, VPS bootstrap`
@@ -165,5 +167,6 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 - Smart recommendations from user preferences
 - "Model Battle" — user-voted head-to-head
 - New-model alerts / notifications + email digest
-- Model logo / avatar uploads (Cloudflare R2) if deferred from Phase 5
+- **Production email provider** (Resend / Brevo / SES) — wire real SMTP for
+  password-reset; until then prod runs mail-disabled (code logged server-side)
 - Mobile app
