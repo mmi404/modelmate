@@ -2,6 +2,7 @@ package com.modelmate.review;
 
 import com.modelmate.model.Model;
 import com.modelmate.user.User;
+import com.modelmate.vote.Votable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,7 +26,7 @@ import java.time.Instant;
 @Table(name = "reviews")
 @Getter
 @Setter
-public class Review {
+public class Review implements Votable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

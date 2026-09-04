@@ -1,6 +1,7 @@
 package com.modelmate.discussion;
 
 import com.modelmate.user.User;
+import com.modelmate.vote.Votable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +22,7 @@ import java.time.Instant;
 @Table(name = "replies")
 @Getter
 @Setter
-public class Reply {
+public class Reply implements Votable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

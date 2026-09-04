@@ -1,6 +1,7 @@
 package com.modelmate.discussion;
 
 import com.modelmate.user.User;
+import com.modelmate.vote.Votable;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -25,7 +26,7 @@ import java.util.Set;
 @Table(name = "discussions")
 @Getter
 @Setter
-public class Discussion {
+public class Discussion implements Votable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
