@@ -2,8 +2,6 @@ package com.modelmate.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.modelmate.AbstractIntegrationTest;
-import com.modelmate.security.RateLimitingFilter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,14 +20,6 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     ObjectMapper json;
-
-    @Autowired
-    RateLimitingFilter rateLimitingFilter;
-
-    @BeforeEach
-    void resetRateLimit() {
-        rateLimitingFilter.clearBuckets();
-    }
 
     private String register(String email) throws Exception {
         String body = """

@@ -1,6 +1,7 @@
 package com.modelmate;
 
 import com.modelmate.auth.TestPasswordResetCodeCapture;
+import com.modelmate.security.RateLimitingFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -44,6 +45,9 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
+
     @BeforeEach
     void resetToSeedBaseline() {
         jdbc.execute("truncate table votes, password_reset_tokens, replies, discussion_tags, "
@@ -53,5 +57,6 @@ public abstract class AbstractIntegrationTest {
         jdbc.update("delete from users where email not in "
                 + "('system@modelmate.local', 'admin@modelmate.local')");
         TestPasswordResetCodeCapture.LAST_CODE.set(null);
+        rateLimitingFilter.clearBuckets();
     }
 }

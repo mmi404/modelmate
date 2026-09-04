@@ -1,8 +1,6 @@
 package com.modelmate.auth;
 
 import com.modelmate.AbstractIntegrationTest;
-import com.modelmate.security.RateLimitingFilter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,14 +14,6 @@ class RateLimitIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     MockMvc mvc;
-
-    @Autowired
-    RateLimitingFilter rateLimitingFilter;
-
-    @BeforeEach
-    void resetRateLimit() {
-        rateLimitingFilter.clearBuckets();
-    }
 
     @Test
     void sixthLoginAttemptFromSameIpIsRateLimited() throws Exception {
