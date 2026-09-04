@@ -48,6 +48,11 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     private RateLimitingFilter rateLimitingFilter;
 
+    /** Grant ADMIN to a registered user (they must re-login to get a token with the new role). */
+    protected void promoteToAdmin(String email) {
+        jdbc.update("update users set role = 'ADMIN' where email = ?", email);
+    }
+
     @BeforeEach
     void resetToSeedBaseline() {
         jdbc.execute("truncate table votes, password_reset_tokens, replies, discussion_tags, "

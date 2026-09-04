@@ -29,7 +29,9 @@ public interface ModelRepository extends JpaRepository<Model, Long> {
 
     List<Model> findByStatusOrderByCreatedAtDesc(ModelStatus status);
 
-    Page<Model> findByStatus(ModelStatus status, Pageable pageable);
+    Page<Model> findByStatusOrderByCreatedAtAsc(ModelStatus status, Pageable pageable);
+
+    long countByStatus(ModelStatus status);
 
     @Query("select m from Model m where m.status = com.modelmate.model.ModelStatus.APPROVED "
             + "and (lower(m.name) like lower(concat('%', :q, '%')) "

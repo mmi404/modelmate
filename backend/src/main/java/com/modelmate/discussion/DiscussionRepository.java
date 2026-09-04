@@ -52,4 +52,6 @@ public interface DiscussionRepository extends JpaRepository<Discussion, Long> {
             + "select author_id from discussions union select author_id from replies) contributors",
             nativeQuery = true)
     long countActiveMembers();
+
+    List<Discussion> findByAuthorIdOrderByCreatedAtDesc(Long authorId, Pageable pageable);
 }

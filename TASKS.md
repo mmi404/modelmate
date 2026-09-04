@@ -71,21 +71,32 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 3 — Backend domain APIs
 
-- [ ] **Categories:** list (+computed modelCount), detail, models-in-category
-- [ ] **Models:** list/filter/sort/paginate, detail (with aggregate ratings),
-      trending, search typeahead, names, compare, submit (→PENDING)
-- [ ] **Reviews/Problems:** list reviews, list problems, create (validation:
-      ratings required for REVIEW), edit (author), delete (author/admin);
-      recompute model aggregates
-- [ ] **Leaderboard:** ranked query with category filter + minReviews
-- [ ] **Discussions:** list/filter by tag/sort, detail, create, tags, stats
-- [ ] **Replies:** list (threaded one level), create
-- [ ] **Votes:** upsert + delete, polymorphic, transactional counter updates
-- [ ] **Users/Profile:** public profile, contributions, update me, my contributions
-- [ ] **Admin:** pending list, approve (gen slug), reject (reason), hide review, stats
-- [ ] DTOs + MapStruct (or manual) mappers; every write endpoint `@Valid`
-- [ ] Integration test per controller (Testcontainers)
-- [ ] **▣ commit** per module (`feat(backend): models API`, `feat(backend): discussions & votes`, …)
+- [x] **Categories:** list (+computed modelCount group query), detail, models-in-category
+- [x] **Models:** list/filter/sort(newest|name|rating|reviews)/paginate (native
+      query w/ aggregate join), detail (5-dim aggregate ratings + problem count),
+      trending, search typeahead, names, compare (2-3), submit (→PENDING, unique slug)
+- [x] **Reviews/Problems:** list reviews, list problems, create (REVIEW needs all
+      5 ratings + one-per-user; PROBLEM has severity), edit (author), delete
+      (author/admin, orphan votes cleaned); feed model aggregate
+- [x] **Leaderboard:** ranked native query, category filter + minReviews, top-3 flag
+- [x] **Discussions:** list (tag filter, sort newest|active|top), detail, create,
+      tags-with-counts, stats
+- [x] **Replies:** list (one level of threading, deeper nesting flattened), create
+      (bumps replyCount)
+- [x] **Votes:** PUT upsert / DELETE, polymorphic `Votable`, transactional counters
+- [x] **Users/Profile:** public profile (no email), contributions (merged
+      reviews+problems+discussions+replies), PUT /me, /me/contributions (incl. hidden)
+- [x] **Admin:** pending list, approve, reject (reason), hide/unhide review, stats
+- [x] Manual DTOs + records; every write endpoint `@Valid`; `PageResponse<T>` wrapper
+- [x] Integration tests: catalog(11), review(6), community(6), admin/profile(6),
+      auth(10), rate-limit(1), context(1) = **41 green** (Testcontainers singleton,
+      per-test reset to seed baseline)
+- [x] **▣ commit** per module (`categories & models`, `reviews … leaderboard`,
+      `discussions, replies, votes`, `admin & profile`)
+
+**Backend Phase 1-3 complete: 36 endpoints live under `/api/v1`, Swagger at
+`/api/v1/docs`.** Remaining backend work (Bucket4j on write endpoints, `Last-Modified`
+/ ETag, structured logging) folded into Phase 6-7.
 
 ## Phase 4 — Frontend foundation
 

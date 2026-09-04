@@ -15,10 +15,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     long countByModelIdAndTypeAndStatus(Long modelId, ReviewType type, ReviewStatus status);
 
+    long countByType(ReviewType type);
+
     Page<Review> findByModelIdAndTypeAndStatusOrderByCreatedAtDesc(
             Long modelId, ReviewType type, ReviewStatus status, Pageable pageable);
 
-    Page<Review> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    List<Review> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    List<Review> findByUserIdAndStatusOrderByCreatedAtDesc(Long userId, ReviewStatus status, Pageable pageable);
 
     @Query("""
             select r.model.id as modelId,
