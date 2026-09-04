@@ -48,16 +48,26 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 2 — Backend auth & security
 
-- [ ] `JwtService` (sign/verify, configurable TTL), `JwtAuthFilter`, `@CurrentUser`
-- [ ] `SecurityConfig`: stateless, public matchers, `/admin/**` = ADMIN, BCrypt(12)
-- [ ] `AuthController` + `AuthService`: register, login, me, logout
-- [ ] Password reset: forgot → hashed 6-digit code + email (MailHog),
-      verify-code → reset ticket, reset-password; expiry + attempt cap
-- [ ] `MailConfig` + templated email
-- [ ] `RateLimitConfig` (Bucket4j) + filter on auth endpoints
-- [ ] Turnstile verification service behind `security.captcha.enabled` flag
-- [ ] Tests: register/login/refresh, reset flow, rate-limit 429, role enforcement
-- [ ] **▣ commit:** `feat(backend): JWT auth, password reset, rate limiting`
+- [x] `JwtService` (access token + reset ticket, configurable TTL), `JwtAuthFilter`
+      (bearer header or `mm_session` cookie), `@AuthenticationPrincipal AuthUser`
+- [x] `SecurityConfig`: stateless, public GET matchers, `/api/v1/auth/**` public
+      except `/me` `/logout`, `/admin/**` = ADMIN, BCrypt(12); JSON 401/403 handlers
+- [x] `AuthController` + `AuthService`: register, login, me, logout
+- [x] Password reset: forgot → BCrypt-hashed 6-digit code + email (MailHog),
+      verify-code → 10-min reset ticket, reset-password; 15-min expiry, 5-attempt cap,
+      no user enumeration; event-driven `MailService`
+- [x] `MailService` (`@EventListener` on `PasswordResetCodeIssued`, text template,
+      no-op + log when `modelmate.mail.enabled=false`)
+- [x] `RateLimitingFilter` (Bucket4j, 5 / 15 min / IP on auth endpoints, `429` +
+      `Retry-After`, in security chain)
+- [x] `CaptchaService` — Turnstile siteverify behind `security.captcha.enabled`
+      (default off; live path untested — needs Cloudflare)
+- [x] `ModelMateProperties` (`@ConfigurationProperties`); `GlobalExceptionHandler`
+      extended (404 / 405 / 400 / 409 framework mappings)
+- [x] Tests (12 green): register/login/me, dup email 409, validation 400,
+      full reset flow, wrong code, no-enumeration, rate-limit 429, role 403/401.
+      Testcontainers switched to JVM-singleton pattern (shared cached context).
+- [x] **▣ commit:** `feat(backend): JWT auth, password reset, rate limiting`
 
 ## Phase 3 — Backend domain APIs
 

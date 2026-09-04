@@ -6,12 +6,18 @@ import com.modelmate.common.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,9 +45,32 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "Authentication required", req);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleBadRequest(IllegalArgumentException ex, HttpServletRequest req) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            HttpMessageNotReadableException.class,
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ApiError> handleBadRequest(Exception ex, HttpServletRequest req) {
+        String message = ex instanceof IllegalArgumentException ? ex.getMessage() : "Malformed request";
+        return build(HttpStatus.BAD_REQUEST, message, req);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        return build(HttpStatus.NOT_FOUND, "Resource not found", req);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex,
+                                                           HttpServletRequest req) {
+        return build(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex,
+                                                        HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, "The request conflicts with existing data", req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
