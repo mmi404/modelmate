@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: false
+  flyway:
+    clean-disabled: true
+
+modelmate:
+  jwt:
+    secret: test-secret-value-that-is-definitely-long-enough-32b
+  mail:
+    enabled: false
+
+logging:
+  level:
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN
+    org.flywaydb: WARN

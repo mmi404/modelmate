@@ -1,0 +1,14 @@
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+modelmate:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    com.modelmate: INFO

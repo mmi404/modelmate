@@ -25,19 +25,26 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 1 — Backend foundation
 
-- [ ] Spring Boot 3.4 project (Java 21): web, validation, data-jpa, security,
+- [x] Spring Boot 3.4.2 project (Java 21): web, validation, data-jpa, security,
       flyway, postgresql, springdoc-openapi, jjwt, lombok; Testcontainers for tests
-- [ ] Maven wrapper, `.mvn`, package structure per `ARCHITECTURE.md §3`
-- [ ] `application.yml` + `application-dev.yml` + `application-prod.yml`,
-      all config env-driven, `ddl-auto: validate`
-- [ ] `common/`: `BaseEntity` (id, timestamps), `ApiError`, `GlobalExceptionHandler`,
-      `PageResponse<T>`, slug generator, request-id filter
-- [ ] `OpenApiConfig`, `CorsConfig` (env origins), `/actuator/health` exposed
-- [ ] Flyway `V1__initial_schema.sql` — full schema from `docs/DATA-MODEL.md`
-- [ ] Entities + repositories (proper `@ManyToOne`, no `@Transient` soup)
-- [ ] `V2__seed_reference_data.sql` — 12 categories + ~12 approved models + 1 admin user
-- [ ] Boots clean against Docker Postgres; Swagger renders; health green
-- [ ] **▣ commit:** `feat(backend): project skeleton, schema, entities, seed`
+- [x] Maven wrapper, `.mvn`, package structure per `ARCHITECTURE.md §3`
+- [x] `application.yml` + `application-dev.yml` + `application-prod.yml` +
+      test, all config env-driven, `ddl-auto: validate`
+- [x] `common/`: `ApiError`, `GlobalExceptionHandler`, `PageResponse<T>`,
+      `SlugUtil`, `RequestIdFilter`, typed exceptions (Hibernate `@CreationTimestamp`
+      used per-entity instead of a `BaseEntity` superclass — cleaner schema match)
+- [x] `OpenApiConfig`, `CorsConfig` (env origins), `SecurityConfig` (stateless,
+      permit-all placeholder), `/actuator/health` + `/api/v1/ping`
+- [x] Flyway `V1__initial_schema.sql` — full schema from `docs/DATA-MODEL.md`
+      (checks, partial unique index, pg_trgm)
+- [x] Entities + repositories (proper `@ManyToOne`, `Short` for `smallint` cols)
+- [x] `V2__seed_reference_data.sql` — 12 categories + 12 approved models + system
+      user; dev admin seeded by `DevDataInitializer` (`admin@modelmate.local`)
+- [x] Boots clean against Docker Postgres; Flyway 2/2; Hibernate validate passes;
+      Swagger renders; health green; Testcontainers context test green
+- [x] **▣ commit:** `feat(backend): project skeleton, schema, entities, seed`
+
+  Dev note: local Postgres on host port **5433** (5432 held by another project).
 
 ## Phase 2 — Backend auth & security
 
