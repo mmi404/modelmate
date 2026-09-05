@@ -34,7 +34,7 @@ public class AdminService {
     private final UserRepository users;
 
     public PageResponse<PendingModelDto> pendingModels(Pageable pageable) {
-        Page<Model> page = models.findByStatusOrderByCreatedAtAsc(ModelStatus.PENDING, pageable);
+        Page<Model> page = models.findByStatusForModeration(ModelStatus.PENDING, pageable);
         return PageResponse.of(page.map(m -> new PendingModelDto(
                 m.getId(), m.getName(), m.getSlug(), m.getCreator(),
                 m.getCategory().getName(), m.getCategory().getSlug(),

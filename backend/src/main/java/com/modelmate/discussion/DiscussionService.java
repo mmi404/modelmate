@@ -120,9 +120,11 @@ public class DiscussionService {
         reply.setAuthor(users.getReferenceById(principal.id()));
         reply.setContent(request.content().trim());
         replies.save(reply);
+        replies.flush();
 
-        discussion.setReplyCount(discussion.getReplyCount() + 1);
-        return toDto(reply, null);
+        ReplyDto dto = toDto(reply, null);
+        discussions.incrementReplyCount(discussionId);
+        return dto;
     }
 
     // ----- helpers ----------------------------------------------------

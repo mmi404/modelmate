@@ -30,6 +30,7 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final ApplicationEventPublisher events;
+    private final PasswordResetAttemptRecorder attemptRecorder;
     private final SecureRandom random = new SecureRandom();
 
     /** Always succeeds silently — never reveals whether the email is registered. */
@@ -67,7 +68,9 @@ public class PasswordResetService {
             throw new IllegalArgumentException("Too many attempts, request a new code");
         }
         if (!passwordEncoder.matches(code, token.getCodeHash())) {
-            token.setAttemptCount(token.getAttemptCount() + 1);
+            // Committed in a separate transaction: this method rejects by throwing,
+            // which would otherwise roll the increment back and defeat the cap.
+            attemptRecorder.recordFailedAttempt(token.getId());
             throw new IllegalArgumentException("Invalid or expired code");
         }
         return jwtService.generateResetTicket(user.getId());

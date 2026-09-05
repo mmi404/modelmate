@@ -4,6 +4,7 @@ import com.modelmate.common.exception.ConflictException;
 import com.modelmate.common.exception.ForbiddenException;
 import com.modelmate.common.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
@@ -84,12 +86,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
+    /**
+     * Last resort. The client gets a generic message (no internals leaked), but the
+     * stack trace is logged with the request id so the failure is actually
+     * diagnosable in production.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest req) {
+        log.error("Unhandled exception for {} {}", req.getMethod(), req.getRequestURI(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", req);
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest req) {
+        if (status.is5xxServerError()) {
+            log.error("{} {} -> {} {}", req.getMethod(), req.getRequestURI(), status.value(), message);
+        } else {
+            log.debug("{} {} -> {} {}", req.getMethod(), req.getRequestURI(), status.value(), message);
+        }
         ApiError body = ApiError.of(status.value(), status.getReasonPhrase(),
                 message == null ? status.getReasonPhrase() : message, req.getRequestURI());
         return ResponseEntity.status(status).body(body);

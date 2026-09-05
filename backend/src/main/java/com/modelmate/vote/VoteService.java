@@ -8,6 +8,7 @@ import com.modelmate.security.AuthUser;
 import com.modelmate.user.UserRepository;
 import com.modelmate.vote.dto.VoteDtos.VoteResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,56 +28,83 @@ public class VoteService {
         if (value == 0) {
             throw new IllegalArgumentException("Vote value must be 1 or -1");
         }
-        Votable target = loadTarget(type, targetId);
+        requireTargetExists(type, targetId);
 
         Vote existing = votes.findByUserIdAndTargetTypeAndTargetId(principal.id(), type, targetId).orElse(null);
+
         if (existing == null) {
             Vote vote = new Vote();
             vote.setUser(users.getReferenceById(principal.id()));
             vote.setTargetType(type);
             vote.setTargetId(targetId);
             vote.setValue(value);
-            votes.save(vote);
-            applyDelta(target, 0, value);
+            try {
+                votes.saveAndFlush(vote);
+            } catch (DataIntegrityViolationException ex) {
+                // The same user voted concurrently (e.g. a double-click). The unique
+                // constraint did its job; surface it rather than double-counting.
+                throw new com.modelmate.common.exception.ConflictException(
+                        "You have already voted on this item");
+            }
+            applyDelta(type, targetId, 0, value);
         } else if (existing.getValue() != value) {
-            applyDelta(target, existing.getValue(), value);
+            short previous = existing.getValue();
             existing.setValue(value);
+            votes.flush();
+            applyDelta(type, targetId, previous, value);
         }
-        return result(target, (int) value);
+
+        return currentCounts(type, targetId, (int) value);
     }
 
     public VoteResult remove(AuthUser principal, VoteTargetType type, Long targetId) {
-        Votable target = loadTarget(type, targetId);
-        votes.findByUserIdAndTargetTypeAndTargetId(principal.id(), type, targetId).ifPresent(vote -> {
-            applyDelta(target, vote.getValue(), (short) 0);
-            votes.delete(vote);
-        });
-        return result(target, null);
+        requireTargetExists(type, targetId);
+        Vote existing = votes.findByUserIdAndTargetTypeAndTargetId(principal.id(), type, targetId).orElse(null);
+        if (existing != null) {
+            short previous = existing.getValue();
+            votes.delete(existing);
+            votes.flush();
+            applyDelta(type, targetId, previous, (short) 0);
+        }
+        return currentCounts(type, targetId, null);
     }
 
-    private Votable loadTarget(VoteTargetType type, Long id) {
-        return switch (type) {
-            case DISCUSSION -> discussions.findById(id).orElseThrow(() -> NotFoundException.of("Discussion", id));
-            case REPLY -> replies.findById(id).orElseThrow(() -> NotFoundException.of("Reply", id));
-            case REVIEW -> reviews.findById(id).orElseThrow(() -> NotFoundException.of("Review", id));
+    /**
+     * Moves one vote from {@code from} to {@code to} (0 meaning "none") using an
+     * atomic {@code count = count + delta} statement, so concurrent voters cannot
+     * lose each other's increments.
+     */
+    private void applyDelta(VoteTargetType type, Long targetId, int from, int to) {
+        int upDelta = (to == 1 ? 1 : 0) - (from == 1 ? 1 : 0);
+        int downDelta = (to == -1 ? 1 : 0) - (from == -1 ? 1 : 0);
+        if (upDelta == 0 && downDelta == 0) {
+            return;
+        }
+        switch (type) {
+            case DISCUSSION -> discussions.adjustVoteCounts(targetId, upDelta, downDelta);
+            case REPLY -> replies.adjustVoteCounts(targetId, upDelta, downDelta);
+            case REVIEW -> reviews.adjustVoteCounts(targetId, upDelta, downDelta);
+        }
+    }
+
+    private void requireTargetExists(VoteTargetType type, Long id) {
+        boolean exists = switch (type) {
+            case DISCUSSION -> discussions.existsById(id);
+            case REPLY -> replies.existsById(id);
+            case REVIEW -> reviews.existsById(id);
         };
-    }
-
-    /** Move one vote from {@code from} to {@code to} (0 means "none"). */
-    private void applyDelta(Votable target, int from, int to) {
-        if (from == 1) {
-            target.setUpvoteCount(Math.max(0, target.getUpvoteCount() - 1));
-        } else if (from == -1) {
-            target.setDownvoteCount(Math.max(0, target.getDownvoteCount() - 1));
-        }
-        if (to == 1) {
-            target.setUpvoteCount(target.getUpvoteCount() + 1);
-        } else if (to == -1) {
-            target.setDownvoteCount(target.getDownvoteCount() + 1);
+        if (!exists) {
+            throw NotFoundException.of(type.name().charAt(0) + type.name().substring(1).toLowerCase(), id);
         }
     }
 
-    private VoteResult result(Votable target, Integer myVote) {
+    /** Re-reads after the atomic update (the modifying query clears the context). */
+    private VoteResult currentCounts(VoteTargetType type, Long targetId, Integer myVote) {
+        Votable target = switch (type) {
+            case DISCUSSION -> discussions.findById(targetId).orElseThrow(() -> NotFoundException.of("Discussion", targetId));
+            case REPLY -> replies.findById(targetId).orElseThrow(() -> NotFoundException.of("Reply", targetId));
+            case REVIEW -> reviews.findById(targetId).orElseThrow(() -> NotFoundException.of("Review", targetId));
+        };
         return new VoteResult(target.getUpvoteCount(), target.getDownvoteCount(), myVote);
     }
 }

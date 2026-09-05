@@ -29,7 +29,11 @@ public interface ModelRepository extends JpaRepository<Model, Long> {
 
     List<Model> findByStatusOrderByCreatedAtDesc(ModelStatus status);
 
-    Page<Model> findByStatusOrderByCreatedAtAsc(ModelStatus status, Pageable pageable);
+    /** Fetch-joined: the admin list renders category + submitter for every row. */
+    @Query(value = "select m from Model m join fetch m.category join fetch m.submittedBy "
+            + "where m.status = :status order by m.createdAt asc",
+            countQuery = "select count(m) from Model m where m.status = :status")
+    Page<Model> findByStatusForModeration(@Param("status") ModelStatus status, Pageable pageable);
 
     long countByStatus(ModelStatus status);
 
