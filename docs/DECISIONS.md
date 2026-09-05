@@ -2,6 +2,19 @@
 
 Short records of choices that shaped the build. Newest first.
 
+## ADR-013 — Public pages are dynamically server-rendered, not static ISR
+
+The root layout resolves the session (`getCurrentUser()` → `cookies()`) to render
+the navbar, which opts every route into dynamic rendering. We keep it this way
+rather than moving auth to a client-only fetch (which would flash the logged-out
+navbar and lose the server-side user for RSC).
+
+SEO is unaffected: crawlers still receive complete server HTML with review text
+and ratings inline (verified). The `fetch`-level Data Cache (`next: { revalidate }`
+on every backend call) still shields the backend — a page render is per-request
+but its data is served from cache for 5–60 min. `sitemap.xml`, `robots.txt`, and
+`/llms*.txt` are fully static with hourly revalidate.
+
 ## ADR-012 — Public browse pages are NOT gated behind login
 `ModelMate_Updated_UI_Design_Instructions.pdf` says "Not logged in: Always
 redirected to Login Page" — reasonable for a coursework static-site mockup,

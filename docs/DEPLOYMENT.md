@@ -1,6 +1,18 @@
 # Deployment & CI/CD
 
-> Detailed steps are filled in during **Phase 8–9**. This is the target design.
+Artifacts:
+
+| file | purpose |
+|---|---|
+| `backend/Dockerfile` | multi-stage JDK build → JRE 21 runtime, non-root, actuator healthcheck |
+| `frontend/Dockerfile` | multi-stage pnpm build → Next.js `standalone` runtime, non-root |
+| `docker-compose.prod.yml` | postgres + backend + frontend (+ `caddy` under `--profile edge`) |
+| `infra/Caddyfile` | dedicated edge proxy (only with `--profile edge`) |
+| `infra/Caddyfile.shared-snippet` | site block to paste into the VPS's shared Caddy |
+| `infra/bootstrap.sh` | idempotent first-time VPS setup + backup cron |
+| `.env.prod.example` | template for `/opt/modelmate/.env` |
+| `.github/workflows/ci.yml` | lint / typecheck / test / build, path-filtered |
+| `.github/workflows/deploy.yml` | build+push GHCR images, SSH deploy, health gate |
 
 ## Topology
 
@@ -53,14 +65,28 @@ Caddy** instead of running its own (see ADR-009 / open decision O-2).
 
 On the VPS: `/opt/modelmate/.env` holds the same values for `docker compose`.
 
-## First-time VPS bootstrap  (script: `infra/bootstrap.sh`)
+## First-time VPS bootstrap
 
-1. install Docker + compose plugin
-2. `mkdir -p /opt/modelmate/{backups}` ; copy `docker-compose.prod.yml` + `.env`
-3. hook the domain into Caddy (own Caddyfile, or add a site block to the shared one)
-4. `docker compose up -d` ; verify health
-5. add cron: nightly `pg_dump` + weekly prune; optional restic offsite
-6. point Cloudflare DNS `A`/`AAAA` at the VPS, enable proxy
+```bash
+# from a clone of this repo, on your machine:
+scp -r docker-compose.prod.yml infra .env.prod.example <vps>:/tmp/mm/
+ssh <vps> 'sudo bash /tmp/mm/infra/bootstrap.sh'      # 1st run: creates /opt/modelmate/.env, stops
+ssh <vps> 'sudo nano /opt/modelmate/.env'             # set POSTGRES_PASSWORD, JWT_SECRET, SITE_URL
+ssh <vps> 'sudo bash /tmp/mm/infra/bootstrap.sh'      # 2nd run: Caddy site block, compose up, backup cron
+```
+
+`bootstrap.sh` installs Docker if missing, appends `infra/Caddyfile.shared-snippet`
+to `/etc/caddy/Caddyfile` (reloading Caddy), starts the stack, and installs the
+nightly `pg_dump` cron (14-day retention).
+
+Then in Cloudflare: point `modelmate.mmi404.com` `A`/`AAAA` at the VPS, proxied (orange cloud).
+
+## GitHub configuration
+
+Secrets (repo → Settings → Secrets and variables → Actions):
+`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `GHCR_TOKEN` (a PAT with `write:packages`).
+Variable: `SITE_URL` (defaults to `https://modelmate.mmi404.com`).
+The `deploy` job uses a `production` environment — add required reviewers there if you want a manual gate.
 
 ## Runbook
 

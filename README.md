@@ -35,9 +35,29 @@ modelmate/
 
 ```bash
 cp .env.example .env
-docker compose up -d            # postgres, adminer (:8081), mailhog (:8025)
-cd backend && ./mvnw spring-boot:run       # :8080
-cd frontend && pnpm install && pnpm dev    # :3000
+cp frontend/.env.example frontend/.env.local
+docker compose up -d            # postgres (:5433), adminer (:8081), mailhog (:8025)
+
+# backend (:8080) — reads DB_URL / JWT_SECRET from the repo-root .env
+cd backend && set -a && . ../.env && set +a && ./mvnw spring-boot:run
+
+# frontend (:3000) — reads frontend/.env.local
+cd frontend && pnpm install && pnpm dev
+```
+
+Password-reset emails are caught by Mailhog at <http://localhost:8025>.
+Seed admin (dev only): `admin@modelmate.local` / `admin12345`.
+
+Checks: `cd backend && ./mvnw verify` · `cd frontend && pnpm lint && pnpm typecheck && pnpm build`
+
+## Production
+
+Images are built by CI and deployed to the VPS via `docker-compose.prod.yml`.
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). To run the full prod stack locally:
+
+```bash
+cp .env.prod.example .env         # set POSTGRES_PASSWORD, JWT_SECRET, SITE_URL
+docker compose -f docker-compose.prod.yml up --build   # add --profile edge for bundled Caddy
 ```
 
 ## Documentation
