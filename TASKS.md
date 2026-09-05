@@ -139,7 +139,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 ## Phase 5 — Frontend pages
 
 - [x] **Auth:** `/login`, `/register` (two-column per PDF), `/forgot-password` (3 steps)
-- [ ] **Home `/`:** trending carousel, latest reviews list, popular categories grid
+- [x] **Home `/`:** trending carousel, popular categories grid (latest-reviews feed deferred — needs a backend endpoint)
 - [x] **Categories `/categories`** + **`/categories/[slug]`** (vertical model cards, mini-ratings)
 - [x] **Model detail `/models/[slug]`:** overview, 5-criteria rating bars, reviews
       (comment style), problems (accordion, by severity), vote buttons

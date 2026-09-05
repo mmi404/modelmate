@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { backendFetch } from "@/lib/api/backend-fetch";
-import type { CategoryDto } from "@/lib/api/types";
+import { ModelCard } from "@/components/models/model-card";
+import type { CategoryDto, ModelCardDto } from "@/lib/api/types";
 
 // Public page (ADR-012): server-rendered and revalidated hourly for SEO/GEO.
 export const revalidate = 3600;
 
-async function getCategories() {
+function getCategories() {
   return backendFetch<CategoryDto[]>("/categories", {
     authenticated: false,
     next: { revalidate: 3600 },
   });
 }
 
+function getTrending() {
+  return backendFetch<ModelCardDto[]>("/models/trending?limit=6", {
+    authenticated: false,
+    next: { revalidate: 900 },
+  });
+}
+
 export default async function HomePage() {
-  const categories = await getCategories();
+  const [categories, trending] = await Promise.all([getCategories(), getTrending()]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -35,6 +43,22 @@ export default async function HomePage() {
           </Button>
         </div>
       </section>
+
+      {trending.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Trending this month</h2>
+            <Link href="/leaderboard" className="text-sm text-primary hover:underline">
+              See leaderboard
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {trending.map((model) => (
+              <ModelCard key={model.id} model={model} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="mb-4 flex items-center justify-between">
