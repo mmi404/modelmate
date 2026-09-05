@@ -140,12 +140,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 - [ ] **Auth:** `/login`, `/register` (two-column per PDF), `/forgot-password` (3 steps)
 - [ ] **Home `/`:** trending carousel, latest reviews list, popular categories grid
-- [ ] **Categories `/categories`** + **`/categories/[slug]`** (vertical model cards, mini-ratings)
-- [ ] **Model detail `/models/[slug]`:** overview, 5-criteria rating bars, reviews
+- [x] **Categories `/categories`** + **`/categories/[slug]`** (vertical model cards, mini-ratings)
+- [x] **Model detail `/models/[slug]`:** overview, 5-criteria rating bars, reviews
       (comment style), problems (accordion, by severity), vote buttons
 - [ ] **Post review/problem `/submit-review`:** model typeahead, type toggle,
       star inputs, severity, textarea
-- [ ] **Compare `/compare`:** 2–3 model pickers, side-by-side rating table
+- [x] **Compare `/compare`:** 2–3 model pickers, side-by-side rating table
 - [ ] **Leaderboard `/leaderboard`:** ranked table, category filter, top-3 highlight
 - [ ] **Community `/community`:** discussion list, tag filter, stats sidebar, tag cloud
 - [ ] **Discussion detail `/community/[id]`:** thread, replies, nested reply, voting
