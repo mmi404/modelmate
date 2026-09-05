@@ -1,0 +1,28 @@
+# ModelMate — site block for the VPS's shared Caddy.
+#
+# The shared Caddy runs on the host (not in this compose stack). ModelMate's
+# frontend and backend are published on 127.0.0.1 by docker-compose.prod.yml
+# (ports 3000 and 8080). Append this block to /etc/caddy/Caddyfile on the host
+# and reload:  caddy reload --config /etc/caddy/Caddyfile
+#
+# TLS is handled automatically by the shared Caddy (Let's Encrypt / Cloudflare).
+
+modelmate.mmi404.com {
+	encode zstd gzip
+
+	@api path /api/v1/* /api/v1
+	handle @api {
+		reverse_proxy 127.0.0.1:8080
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}

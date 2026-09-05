@@ -1,0 +1,29 @@
+# Dedicated edge proxy — used only with `docker compose --profile edge`.
+# On the shared VPS this file is NOT used; add the block from
+# infra/Caddyfile.shared-snippet to the host's existing Caddyfile instead.
+
+{
+	email {$ACME_EMAIL:admin@mmi404.com}
+}
+
+{$SITE_DOMAIN:modelmate.mmi404.com} {
+	encode zstd gzip
+
+	# Public read API and OpenAPI docs go straight to the backend.
+	@api path /api/v1/* /api/v1
+	handle @api {
+		reverse_proxy backend:8080
+	}
+
+	# Everything else is the Next.js app (which owns /api/login, /api/backend/*, …).
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
