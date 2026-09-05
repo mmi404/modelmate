@@ -2,11 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getDiscussions, getDiscussionTags, getCommunityStats } from "@/lib/api/community";
+import { safe } from "@/lib/api/safe";
 import { DiscussionCard } from "@/components/community/discussion-card";
 import { TagFilter } from "@/components/community/tag-filter";
+import type { DiscussionDto, DiscussionStats, PageResponse, TagCountDto } from "@/lib/api/types";
+
+const EMPTY_PAGE: PageResponse<DiscussionDto> = {
+  content: [], page: 0, size: 0, totalElements: 0, totalPages: 0,
+};
+const EMPTY_STATS: DiscussionStats = { activeMembers: 0, totalDiscussions: 0, totalReplies: 0 };
 
 export const metadata: Metadata = {
   title: "Community",
+  alternates: { canonical: "/community" },
   description: "Discuss AI models with the ModelMate community — ask questions, share findings, compare notes.",
 };
 
@@ -20,9 +28,9 @@ export default async function CommunityPage({ searchParams }: Props) {
   const sort = sortParam && SORTS.has(sortParam) ? sortParam : "newest";
 
   const [discussions, tagCounts, stats] = await Promise.all([
-    getDiscussions({ tags, sort }),
-    getDiscussionTags(),
-    getCommunityStats(),
+    safe(() => getDiscussions({ tags, sort }), EMPTY_PAGE),
+    safe(getDiscussionTags, [] as TagCountDto[]),
+    safe(getCommunityStats, EMPTY_STATS),
   ]);
 
   return (

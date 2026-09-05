@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCategories } from "@/lib/api/catalog";
 import { getLeaderboard } from "@/lib/api/leaderboard";
+import { safe } from "@/lib/api/safe";
 import { CategoryFilter } from "@/components/models/category-filter";
 import { StarRating } from "@/components/models/star-rating";
 import { cn } from "@/lib/utils";
+import type { CategoryDto, LeaderboardEntry } from "@/lib/api/types";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Leaderboard",
+  alternates: { canonical: "/leaderboard" },
   description: "The highest-rated AI models on ModelMate, ranked by community rating and review volume.",
 };
 
@@ -18,8 +21,8 @@ type Props = { searchParams: Promise<{ category?: string }> };
 export default async function LeaderboardPage({ searchParams }: Props) {
   const { category } = await searchParams;
   const [entries, categories] = await Promise.all([
-    getLeaderboard(category, 1),
-    getCategories(),
+    safe(() => getLeaderboard(category, 1), [] as LeaderboardEntry[]),
+    safe(getCategories, [] as CategoryDto[]),
   ]);
 
   return (

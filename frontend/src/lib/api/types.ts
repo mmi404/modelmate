@@ -224,3 +224,16 @@ export interface UpdateProfileRequest {
   bio?: string;
   avatarUrl?: string;
 }
+
+export interface RecentReviewDto {
+  id: number;
+  type: ReviewType;
+  title: string | null;
+  snippet: string | null;
+  overallRating: string | null;
+  severity: Severity | null;
+  modelName: string;
+  modelSlug: string;
+  reviewerName: string;
+  createdAt: string;
+}

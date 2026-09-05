@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
-export const metadata: Metadata = { title: "Reset password" };
+export const metadata: Metadata = { title: "Reset password", robots: { index: false } };
 
 export default async function ForgotPasswordPage() {
   const user = await getCurrentUser();

@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { getCategories } from "@/lib/api/catalog";
+import { safe } from "@/lib/api/safe";
+import type { CategoryDto } from "@/lib/api/types";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Categories",
+  alternates: { canonical: "/categories" },
   description:
     "Browse AI models by category — LLMs, image generation, speech, embeddings and more, each rated by the ModelMate community.",
 };
 
 export default async function CategoriesPage() {
-  const categories = await getCategories();
+  const categories = await safe(getCategories, [] as CategoryDto[]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

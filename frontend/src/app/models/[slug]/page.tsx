@@ -11,6 +11,8 @@ import { StarRating } from "@/components/models/star-rating";
 import { RatingBars } from "@/components/models/rating-bars";
 import { ReviewItem } from "@/components/reviews/review-item";
 import { ProblemList } from "@/components/reviews/problem-list";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbLd, modelLd } from "@/lib/seo/structured-data";
 import { formatDate } from "@/lib/format";
 
 export const revalidate = 300;
@@ -30,9 +32,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const model = await loadModel(slug);
   const rating = model.ratings.overall ? `${model.ratings.overall}/5 from ${model.ratings.reviewCount} reviews — ` : "";
+  const description = `${rating}${model.description ?? `Community reviews and ratings for ${model.name}.`}`.slice(0, 160);
+  const path = `/models/${model.slug}`;
   return {
-    title: `${model.name} reviews`,
-    description: `${rating}${model.description ?? `Community reviews and ratings for ${model.name}.`}`.slice(0, 160),
+    title: `${model.name} reviews & ratings`,
+    description,
+    alternates: { canonical: path },
+    openGraph: { type: "article", url: path, title: `${model.name} reviews & ratings`, description },
+    twitter: { card: "summary_large_image", title: `${model.name} reviews & ratings`, description },
   };
 }
 
@@ -46,6 +53,16 @@ export default async function ModelPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      <JsonLd
+        data={[
+          modelLd(model, reviews.content),
+          breadcrumbLd([
+            { name: "Categories", path: "/categories" },
+            { name: model.category.name, path: `/categories/${model.category.slug}` },
+            { name: model.name, path: `/models/${model.slug}` },
+          ]),
+        ]}
+      />
       <nav className="mb-4 text-sm text-muted-foreground">
         <Link href="/categories" className="hover:text-foreground">Categories</Link>
         <span className="mx-2">/</span>

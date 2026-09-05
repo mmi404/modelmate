@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { NewDiscussionForm } from "./new-discussion-form";
 
-export const metadata: Metadata = { title: "Start a discussion" };
+export const metadata: Metadata = { title: "Start a discussion", robots: { index: false } };
 
 export default function NewDiscussionPage() {
   return (

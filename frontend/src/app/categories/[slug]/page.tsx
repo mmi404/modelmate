@@ -5,6 +5,8 @@ import { BackendError } from "@/lib/api/backend-fetch";
 import { getCategory, getCategoryModels } from "@/lib/api/catalog";
 import { ModelCard } from "@/components/models/model-card";
 import { SortSelect } from "@/components/models/sort-select";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbLd } from "@/lib/seo/structured-data";
 
 export const revalidate = 300;
 
@@ -27,11 +29,14 @@ async function loadCategory(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = await loadCategory(slug);
+  const description =
+    category.description ??
+    `Community reviews and ratings for ${category.name} AI models on ModelMate.`;
   return {
     title: category.name,
-    description:
-      category.description ??
-      `Community reviews and ratings for ${category.name} AI models on ModelMate.`,
+    description,
+    alternates: { canonical: `/categories/${category.slug}` },
+    openGraph: { url: `/categories/${category.slug}`, title: category.name, description },
   };
 }
 
@@ -45,6 +50,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "Categories", path: "/categories" },
+          { name: category.name, path: `/categories/${category.slug}` },
+        ])}
+      />
       <nav className="mb-4 text-sm text-muted-foreground">
         <Link href="/categories" className="hover:text-foreground">
           Categories

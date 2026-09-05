@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { backendFetch } from "@/lib/api/backend-fetch";
+import { safe } from "@/lib/api/safe";
 import { ModelCard } from "@/components/models/model-card";
-import type { CategoryDto, ModelCardDto } from "@/lib/api/types";
+import { StarRating } from "@/components/models/star-rating";
+import { relativeTime } from "@/lib/format";
+import type { CategoryDto, ModelCardDto, RecentReviewDto } from "@/lib/api/types";
 
 // Public page (ADR-012): server-rendered and revalidated hourly for SEO/GEO.
 export const revalidate = 3600;
@@ -21,8 +24,19 @@ function getTrending() {
   });
 }
 
+function getRecentReviews() {
+  return backendFetch<RecentReviewDto[]>("/reviews/recent?limit=6", {
+    authenticated: false,
+    next: { revalidate: 300 },
+  });
+}
+
 export default async function HomePage() {
-  const [categories, trending] = await Promise.all([getCategories(), getTrending()]);
+  const [categories, trending, recent] = await Promise.all([
+    safe(getCategories, [] as CategoryDto[]),
+    safe(getTrending, [] as ModelCardDto[]),
+    safe(getRecentReviews, [] as RecentReviewDto[]),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -60,6 +74,39 @@ export default async function HomePage() {
         </section>
       )}
 
+      {recent.length > 0 && (
+        <section className="mb-12">
+          <h2 className="mb-4 text-xl font-semibold">Latest reviews</h2>
+          <ul className="divide-y divide-border rounded-xl bg-card ring-1 ring-foreground/10">
+            {recent.map((r) => (
+              <li key={r.id} className="p-4">
+                <Link href={`/models/${r.modelSlug}`} className="group flex flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-heading font-medium group-hover:underline">
+                      {r.modelName}
+                    </span>
+                    {r.type === "REVIEW" ? (
+                      <StarRating value={r.overallRating} size="sm" />
+                    ) : (
+                      <span className="text-xs font-medium text-destructive">
+                        Problem{r.severity ? ` · ${r.severity}` : ""}
+                      </span>
+                    )}
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {r.reviewerName} · {relativeTime(r.createdAt)}
+                    </span>
+                  </div>
+                  {r.snippet && (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {categories.length > 0 && (
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Popular Categories</h2>
@@ -81,6 +128,7 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

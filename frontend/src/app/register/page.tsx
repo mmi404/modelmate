@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { RegisterForm } from "./register-form";
 
-export const metadata: Metadata = { title: "Register" };
+export const metadata: Metadata = { title: "Register", alternates: { canonical: "/register" } };
 
 export default async function RegisterPage() {
   const user = await getCurrentUser();

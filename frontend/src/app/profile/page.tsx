@@ -5,7 +5,7 @@ import { getMyContributions } from "@/lib/api/profile";
 import { ContributionList } from "@/components/profile/contribution-list";
 import { ProfileForm } from "./profile-form";
 
-export const metadata: Metadata = { title: "Your profile" };
+export const metadata: Metadata = { title: "Your profile", robots: { index: false } };
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();

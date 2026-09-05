@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BackendError } from "@/lib/api/backend-fetch";
 import { compareModels, getModelNames } from "@/lib/api/catalog";
+import { safe } from "@/lib/api/safe";
 import { ComparePicker } from "@/components/models/compare-picker";
 import { StarRating } from "@/components/models/star-rating";
 import type { ModelDetailDto } from "@/lib/api/types";
@@ -10,6 +11,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Compare AI models",
+  alternates: { canonical: "/compare" },
   description: "Put 2–3 AI models side by side and compare their community ratings across accuracy, speed, cost, ease of use and reliability.",
 };
 
@@ -23,7 +25,7 @@ function parseSlugs(raw: string | undefined): string[] {
 export default async function ComparePage({ searchParams }: Props) {
   const { slugs: rawSlugs } = await searchParams;
   const slugs = parseSlugs(rawSlugs);
-  const names = await getModelNames();
+  const names = await safe(getModelNames, [] as Awaited<ReturnType<typeof getModelNames>>);
 
   let models: ModelDetailDto[] = [];
   let error: string | null = null;

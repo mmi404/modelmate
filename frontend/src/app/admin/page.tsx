@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getAdminStats, getPendingModels } from "@/lib/api/admin";
 import { PendingList } from "@/components/admin/pending-list";
 
-export const metadata: Metadata = { title: "Admin" };
+export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
 const STAT_LABELS: Record<string, string> = {
   totalUsers: "Users",

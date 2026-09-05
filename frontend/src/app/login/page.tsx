@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Log in" };
+export const metadata: Metadata = { title: "Log in", alternates: { canonical: "/login" } };
 
 export default async function LoginPage() {
   const user = await getCurrentUser();

@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { VoteButtons } from "@/components/vote/vote-buttons";
+import { HideReviewButton } from "@/components/admin/hide-review-button";
 import { relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ReviewDto, Severity } from "@/lib/api/types";
@@ -69,6 +70,7 @@ export function ProblemList({ problems }: { problems: ReviewDto[] }) {
                   <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
                     {problem.content}
                   </p>
+                  <HideReviewButton reviewId={problem.id} />
                 </div>
               </article>
             ))}

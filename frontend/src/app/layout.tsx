@@ -6,6 +6,9 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationLd, websiteLd } from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,12 +23,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "ModelMate — Reviews & ratings for AI models",
-    template: "%s — ModelMate",
+    default: `${SITE_NAME} — Reviews & ratings for AI models`,
+    template: `%s — ${SITE_NAME}`,
   },
-  description:
-    "Community-driven reviews, ratings, and comparisons of AI models across every category.",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: `${SITE_NAME} — Reviews & ratings for AI models`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — Reviews & ratings for AI models`,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -34,6 +51,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable} h-full antialiased dark`}>
       <body className="min-h-full">
+        <JsonLd data={[organizationLd(), websiteLd()]} />
         <AuthProvider user={user}>
           <QueryProvider>
             <TooltipProvider delayDuration={200}>

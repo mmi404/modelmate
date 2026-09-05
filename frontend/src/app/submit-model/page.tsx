@@ -4,6 +4,7 @@ import { SubmitModelForm } from "./submit-model-form";
 
 export const metadata: Metadata = {
   title: "Submit a model",
+  robots: { index: false },
   description: "Add an AI model to ModelMate for the community to review and rate.",
 };
 

@@ -4,6 +4,7 @@ import { SubmitReviewForm } from "./submit-review-form";
 
 export const metadata: Metadata = {
   title: "Write a review",
+  robots: { index: false },
   description: "Share your experience with an AI model — rate it or report a problem.",
 };
 

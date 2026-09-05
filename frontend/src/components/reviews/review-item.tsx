@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { StarRating } from "@/components/models/star-rating";
 import { VoteButtons } from "@/components/vote/vote-buttons";
+import { HideReviewButton } from "@/components/admin/hide-review-button";
 import { relativeTime } from "@/lib/format";
 import type { ReviewDto } from "@/lib/api/types";
 
@@ -43,6 +44,7 @@ export function ReviewItem({ review }: { review: ReviewDto }) {
         <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
           {review.content}
         </p>
+        <HideReviewButton reviewId={review.id} />
       </div>
     </article>
   );
