@@ -6,7 +6,7 @@ ModelMate is a two-tier web application:
 
 ```
                     ┌──────────────────────────────────────────────┐
-   Browser  ───────▶│  Next.js 15 (App Router, SSR/ISR)   :3000    │
+   Browser  ───────▶│  Next.js 16 (App Router, SSR/ISR)   :3000    │
    / AI agent       │  - public pages server-rendered for SEO/GEO  │
                     │  - authed pages behind middleware            │
                     │  - talks to backend over HTTPS, same domain  │
@@ -34,8 +34,9 @@ Single public domain. Caddy terminates TLS and routes:
   `/leaderboard`, `/compare`, `/community`, discussion pages) are
   server-rendered / ISR so crawlers and LLM agents get full HTML.
 - **Authed routes** (`/submit-model`, `/submit-review`, `/profile`,
-  `/community/new`, `/admin`) are gated by `middleware.ts` which checks the
-  session cookie and redirects to `/login`.
+  `/community/new`, `/admin`) are gated by `proxy.ts` (Next.js 16 renamed
+  `middleware.ts` → `proxy.ts`, ADR-011) which checks for a session cookie and
+  redirects to `/login`. Everything else is public — ADR-012.
 - **Auth model:** backend issues a JWT; Next.js stores it in an **httpOnly,
   Secure, SameSite=Lax cookie** set via a route handler (`/api/session`). The
   browser never sees the token. Server Components read the cookie and call the
@@ -43,7 +44,8 @@ Single public domain. Caddy terminates TLS and routes:
   wrapper that always sends credentials.
 - **Data fetching:** Server Components for first paint; TanStack Query in Client
   Components for interactive lists, mutations, optimistic voting.
-- **UI:** Tailwind + shadcn/ui. Components ported from `version1.0/frontend/src/components/ui`.
+- **UI:** Tailwind v4 + shadcn/ui (rebuilt fresh against the current CLI —
+  version1.0's components predate Tailwind v4 and weren't portable as-is).
   Design tokens from `ModelMate_Updated_UI_Design_Instructions.pdf`:
   - bg `#0D0D0D`, surface `#1A1A1A`, accent `#4F46E5`, text `#F9FAFB` / `#9CA3AF`,
     border `#2C2C2C`; font Inter; 8px radius; card shadow `0 2px 8px rgba(0,0,0,.3)`.
@@ -92,9 +94,11 @@ Register / Login
   Next route handler sets httpOnly cookie `mm_session=<jwt>`, returns { user }
 
 Authenticated request
-  Client Component → fetch('/bff/...') or Server Component → backend
-  Next attaches `Authorization: Bearer <cookie>` when calling Spring Boot
-  Spring validates, resolves CurrentUser
+  Server Component  → backendFetch() reads the cookie, calls Spring Boot directly
+  Client Component  → apiFetch() → same-origin /api/backend/[...path] route handler
+                       (reads the cookie server-side, forwards as Bearer, proxies
+                       the response back) → Spring Boot
+  Spring validates the JWT, resolves AuthUser
 
 Logout
   POST /logout → Next clears cookie

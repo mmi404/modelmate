@@ -13,7 +13,7 @@ only — nothing here depends on it.
 
 | Layer     | Choice |
 |-----------|--------|
-| Frontend  | Next.js 15 (App Router) · TypeScript · Tailwind · shadcn/ui · TanStack Query |
+| Frontend  | Next.js 16 (App Router) · TypeScript · Tailwind · shadcn/ui · TanStack Query |
 | Backend   | Spring Boot 3.4 · Java 21 · Spring Security + JWT · Spring Data JPA · Flyway · springdoc-openapi |
 | Database  | PostgreSQL 16 |
 | Infra     | Docker Compose · Caddy reverse proxy · GitHub Actions CI/CD · deployed to VPS |

@@ -100,18 +100,41 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 4 — Frontend foundation
 
-- [ ] Next.js 15 App Router + TS + Tailwind + ESLint + Prettier; pnpm
-- [ ] shadcn/ui init; port needed primitives from `version1.0/frontend/src/components/ui`
-- [ ] Design tokens (dark theme from PDF) in `globals.css` / Tailwind config;
-      self-hosted Inter
-- [ ] App shell: `Navbar` (70px, search, auth-aware), `Sidebar` (250px, authed),
-      `Footer` (60px); responsive (mobile drawer)
-- [ ] Typed API client: base URL from env, error normalisation, cookie creds
-- [ ] `middleware.ts` route protection; `AuthProvider`; `/api/session` route handler
-      (set/clear httpOnly cookie); `getCurrentUser()` server util
-- [ ] TanStack Query provider, toast (sonner), theme provider
-- [ ] `.env.example` (`NEXT_PUBLIC_SITE_URL`, `BACKEND_INTERNAL_URL`, …)
-- [ ] **▣ commit:** `feat(frontend): Next.js shell, design system, auth plumbing`
+- [x] Next.js **16.3.4** (React 19.2.8) App Router + TS + Tailwind v4 + ESLint;
+      pnpm; `next dev --webpack` (Turbopack OOM'd on this machine's free RAM —
+      see TASKS note below; webpack is fully supported, just not the new default)
+- [x] shadcn/ui init (radix base, Nova preset) — button, input, label, avatar,
+      dropdown-menu, sheet, separator, sonner, skeleton, card, badge, tooltip,
+      textarea, select. version1.0's components weren't portable (older shadcn/
+      Tailwind 3 API); rebuilt fresh against the current CLI instead.
+- [x] Design tokens (dark theme from PDF: `#0D0D0D`/`#1A1A1A`/`#4F46E5`/etc.) as
+      CSS custom properties in `globals.css`; self-hosted Inter via `next/font/google`
+- [x] App shell: `Navbar` (70px, search input, primary nav, auth-aware avatar
+      menu), `Sidebar` (250px, **authed only** — see ADR-012), `Footer` (60px);
+      mobile: hamburger → `Sheet` drawer with full nav
+- [x] Typed API layer: `lib/api/backend-fetch.ts` (server-only, attaches
+      session as Bearer) + `app/api/backend/[...path]/route.ts` (same-origin
+      proxy so Client Components never see the backend URL or need CORS) +
+      `lib/api/client.ts` (browser `apiFetch`); `lib/api/types.ts` mirrors the
+      backend DTOs
+- [x] `proxy.ts` (middleware→proxy rename, ADR-011) gates write/personal routes
+      only (ADR-012); `AuthProvider` (server-derived context, no client fetch);
+      `/api/login`, `/api/register`, `/api/logout` route handlers set/clear the
+      httpOnly `mm_session` cookie; `getCurrentUser()` server util (`React.cache`)
+- [x] TanStack Query provider, `sonner` Toaster (dark), `TooltipProvider`
+- [x] `frontend/.env.example` + `.env.local`
+- [x] Verified end-to-end against the live backend: home page SSR-renders all
+      12 categories from Postgres; register sets the cookie; authed home page
+      swaps Login/Register for the avatar menu; `proxy.ts` redirects an
+      anonymous visit to `/submit-review` → `/login?next=...`; `tsc --noEmit`
+      and `eslint` both clean
+- [x] **▣ commit:** `feat(frontend): Next.js shell, design system, auth plumbing`
+
+  Dev note: this machine runs low on free RAM (~1GB) with Docker + IDE + backend
+  all up — `pnpm dlx`/`shadcn add` OOM'd in large batches (fixed by adding
+  components a few at a time) and Turbopack's Rust process OOM'd outright
+  (fixed by running dev with `--webpack`, set as the `dev` script default).
+  Stop Docker containers and the Java backend when not actively testing.
 
 ## Phase 5 — Frontend pages
 
