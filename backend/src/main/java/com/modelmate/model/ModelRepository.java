@@ -27,7 +27,8 @@ public interface ModelRepository extends JpaRepository<Model, Long> {
             + "where m.status = com.modelmate.model.ModelStatus.APPROVED group by m.category.id")
     List<CategoryCount> countApprovedByCategory();
 
-    List<Model> findByStatusOrderByCreatedAtDesc(ModelStatus status);
+    @Query("select m from Model m where m.status = :status order by m.name asc")
+    Page<Model> findByStatus(@Param("status") ModelStatus status, Pageable pageable);
 
     /** Fetch-joined: the admin list renders category + submitter for every row. */
     @Query(value = "select m from Model m join fetch m.category join fetch m.submittedBy "

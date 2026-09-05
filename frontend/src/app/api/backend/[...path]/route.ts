@@ -4,6 +4,9 @@ import { SESSION_COOKIE } from "@/lib/auth/session";
 
 const BACKEND_BASE = `${process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8080"}/api/v1`;
 
+/** Upstream calls give up rather than pinning a server thread on a hung backend. */
+const UPSTREAM_TIMEOUT_MS = 15_000;
+
 /**
  * Same-origin proxy so Client Components never need to know the backend's
  * address or CORS: `fetch('/api/backend/models')` etc. The browser's cookie
@@ -11,6 +14,13 @@ const BACKEND_BASE = `${process.env.BACKEND_INTERNAL_URL ?? "http://localhost:80
  * request; we read it here and forward it as a Bearer token server-to-server.
  */
 async function forward(request: NextRequest, segments: string[]) {
+  // Refuse traversal segments: without this, /api/backend/../actuator would
+  // normalise out of the /api/v1 prefix and reach endpoints this proxy is not
+  // meant to expose.
+  if (segments.some((s) => s === ".." || s === "." || s.length === 0)) {
+    return NextResponse.json({ message: "Invalid path" }, { status: 400 });
+  }
+
   const path = "/" + segments.join("/");
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
 
@@ -21,12 +31,23 @@ async function forward(request: NextRequest, segments: string[]) {
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
 
-  const response = await fetch(`${BACKEND_BASE}${path}${request.nextUrl.search}`, {
-    method: request.method,
-    headers,
-    body: hasBody ? await request.text() : undefined,
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${BACKEND_BASE}${path}${request.nextUrl.search}`, {
+      method: request.method,
+      headers,
+      body: hasBody ? await request.text() : undefined,
+      cache: "no-store",
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    });
+  } catch (err) {
+    const timedOut = err instanceof Error && err.name === "TimeoutError";
+    console.error(`Backend proxy ${request.method} ${path} failed:`, err);
+    return NextResponse.json(
+      { message: timedOut ? "The server took too long to respond" : "Service unavailable" },
+      { status: timedOut ? 504 : 502 }
+    );
+  }
 
   const responseContentType = response.headers.get("content-type");
   const responseBody = response.status === 204 ? null : await response.arrayBuffer();

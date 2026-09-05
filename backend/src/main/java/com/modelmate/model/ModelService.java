@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 public class ModelService {
 
     private static final Set<String> SORTS = Set.of("newest", "name", "rating", "reviews");
+    private static final int MAX_NAMES = 500;
 
     private final ModelRepository models;
     private final CategoryRepository categories;
@@ -67,8 +68,13 @@ public class ModelService {
                 .toList();
     }
 
+    /**
+     * Bounded on purpose: this feeds picker dropdowns, and an unbounded list would
+     * grow into a multi-megabyte response as the catalogue does. Clients needing to
+     * reach past the cap should use {@code /models/search}.
+     */
     public List<ModelSummaryDto> names() {
-        return models.findByStatusOrderByCreatedAtDesc(ModelStatus.APPROVED).stream()
+        return models.findByStatus(ModelStatus.APPROVED, PageRequest.of(0, MAX_NAMES)).stream()
                 .map(m -> new ModelSummaryDto(m.getId(), m.getName(), m.getSlug(), m.getCreator()))
                 .toList();
     }
