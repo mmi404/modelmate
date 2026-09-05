@@ -1,6 +1,19 @@
 # SEO, GEO & Abuse Prevention
 
-> Implemented in **Phase 7**. This is the plan.
+> **Status:** implemented in Phase 6–7 except where marked _(pending)_.
+>
+> Deviation from the original plan: public pages are **dynamic SSR**, not static
+> ISR — the session lookup in the root layout opts every route out of static
+> generation (see ADR-013). Crawlers still get complete server HTML; the
+> `fetch`-level Data Cache (`next: { revalidate }`) still shields the backend.
+> `sitemap.xml` / `robots.txt` / `/llms*.txt` are fully static.
+>
+> Rate limits as shipped (`RateLimitingFilter`, keyed on resolved client IP):
+> auth 5 / 15 min per path · writes 30 / hour · votes 30 / min · search 60 / min —
+> all return `429` + `Retry-After`.
+>
+> _(pending)_ Turnstile wiring (backend flag exists, needs real keys) and the
+> Cloudflare-console settings (Bot Fight, WAF, edge rate-limit rule).
 
 ## SEO (search engines)
 
