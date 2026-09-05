@@ -138,19 +138,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
 
 ## Phase 5 — Frontend pages
 
-- [ ] **Auth:** `/login`, `/register` (two-column per PDF), `/forgot-password` (3 steps)
+- [x] **Auth:** `/login`, `/register` (two-column per PDF), `/forgot-password` (3 steps)
 - [ ] **Home `/`:** trending carousel, latest reviews list, popular categories grid
 - [x] **Categories `/categories`** + **`/categories/[slug]`** (vertical model cards, mini-ratings)
 - [x] **Model detail `/models/[slug]`:** overview, 5-criteria rating bars, reviews
       (comment style), problems (accordion, by severity), vote buttons
-- [ ] **Post review/problem `/submit-review`:** model typeahead, type toggle,
+- [x] **Post review/problem `/submit-review`:** model typeahead, type toggle,
       star inputs, severity, textarea
 - [x] **Compare `/compare`:** 2–3 model pickers, side-by-side rating table
 - [ ] **Leaderboard `/leaderboard`:** ranked table, category filter, top-3 highlight
 - [ ] **Community `/community`:** discussion list, tag filter, stats sidebar, tag cloud
 - [ ] **Discussion detail `/community/[id]`:** thread, replies, nested reply, voting
 - [ ] **New discussion `/community/new`**
-- [ ] **Submit model `/submit-model`**
+- [x] **Submit model `/submit-model`**
 - [ ] **Profile `/profile` + `/users/[id]`:** info + contributions list
 - [ ] **Admin `/admin`:** pending submissions, approve/reject, hide reviews, stats
 - [ ] Loading / empty / error states for every page; `not-found.tsx`, `error.tsx`
