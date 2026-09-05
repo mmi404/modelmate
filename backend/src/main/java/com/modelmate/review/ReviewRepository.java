@@ -25,6 +25,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByUserIdAndStatusOrderByCreatedAtDesc(Long userId, ReviewStatus status, Pageable pageable);
 
+    /** Latest visible reviews across all models, with model + author eagerly loaded for the home feed. */
+    @Query("""
+            select r from Review r
+            join fetch r.model m
+            join fetch r.user u
+            where r.status = com.modelmate.review.ReviewStatus.VISIBLE
+              and m.status = com.modelmate.model.ModelStatus.APPROVED
+            order by r.createdAt desc
+            """)
+    List<Review> findRecentVisible(Pageable pageable);
+
     @Query("""
             select r.model.id as modelId,
                    avg(r.overallRating) as overall,

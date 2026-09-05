@@ -162,4 +162,29 @@ class ReviewIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(FULL_REVIEW))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void recentFeedIsPublicAndReturnsNewestFirst() throws Exception {
+        String token = register("recent@example.com");
+        long gpt = modelId("gpt-4");
+        long bert = modelId("bert");
+
+        mvc.perform(post("/api/v1/models/" + gpt + "/reviews")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(FULL_REVIEW))
+                .andExpect(status().isCreated());
+        mvc.perform(post("/api/v1/models/" + bert + "/reviews")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"PROBLEM\",\"content\":\"Edge case with long inputs.\",\"severity\":\"LOW\"}"))
+                .andExpect(status().isCreated());
+
+        mvc.perform(get("/api/v1/reviews/recent?limit=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].modelSlug").value("bert"))
+                .andExpect(jsonPath("$[0].type").value("PROBLEM"))
+                .andExpect(jsonPath("$[1].modelSlug").value("gpt-4"))
+                .andExpect(jsonPath("$[1].snippet").value("Solid model overall."));
+    }
 }

@@ -10,6 +10,7 @@ import com.modelmate.model.ModelStatus;
 import com.modelmate.review.dto.ReviewDtos.CreateReviewRequest;
 import com.modelmate.review.dto.ReviewDtos.Ratings;
 import com.modelmate.review.dto.ReviewDtos.ReviewDto;
+import com.modelmate.review.dto.ReviewDtos.RecentReviewDto;
 import com.modelmate.review.dto.ReviewDtos.ReviewerRef;
 import com.modelmate.review.dto.ReviewDtos.UpdateReviewRequest;
 import com.modelmate.security.AuthUser;
@@ -44,6 +45,22 @@ public class ReviewService {
 
     public PageResponse<ReviewDto> listProblems(Long modelId, AuthUser principal, Pageable pageable) {
         return list(modelId, ReviewType.PROBLEM, principal, pageable);
+    }
+
+    public List<RecentReviewDto> recent(int limit) {
+        int capped = Math.min(Math.max(limit, 1), 20);
+        return reviews.findRecentVisible(org.springframework.data.domain.PageRequest.of(0, capped)).stream()
+                .map(r -> new RecentReviewDto(
+                        r.getId(), r.getType(), r.getTitle(), snippet(r.getContent()),
+                        r.getOverallRating(), r.getSeverity(),
+                        r.getModel().getName(), r.getModel().getSlug(),
+                        r.getUser().fullName(), r.getCreatedAt()))
+                .toList();
+    }
+
+    private static String snippet(String content) {
+        String trimmed = content.strip();
+        return trimmed.length() <= 200 ? trimmed : trimmed.substring(0, 200).strip() + "…";
     }
 
     private PageResponse<ReviewDto> list(Long modelId, ReviewType type, AuthUser principal, Pageable pageable) {

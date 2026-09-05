@@ -58,6 +58,21 @@ public final class ReviewDtos {
     ) {
     }
 
+    /** One entry in the home-page "latest reviews" feed. */
+    public record RecentReviewDto(
+            Long id,
+            ReviewType type,
+            String title,
+            String snippet,
+            BigDecimal overallRating,
+            Severity severity,
+            String modelName,
+            String modelSlug,
+            String reviewerName,
+            Instant createdAt
+    ) {
+    }
+
     public record UpdateReviewRequest(
             @Size(max = 255) String title,
             @NotBlank @Size(max = 5000) String content,

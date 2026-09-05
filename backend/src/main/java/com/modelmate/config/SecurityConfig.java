@@ -31,7 +31,8 @@ public class SecurityConfig {
             "/api/v1/models/**",
             "/api/v1/discussions/**",
             "/api/v1/leaderboard/**",
-            "/api/v1/users/**"
+            "/api/v1/users/**",
+            "/api/v1/reviews/recent"
     };
 
     @Bean
@@ -44,6 +45,16 @@ public class SecurityConfig {
         http
                 .cors(c -> c.configurationSource(cors))
                 .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers
+                        .frameOptions(fo -> fo.deny())
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(63072000))
+                        .referrerPolicy(rp -> rp.policy(
+                                org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
+                                        .ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicyHeader(pp -> pp.policy(
+                                "camera=(), microphone=(), geolocation=(), browsing-topics=()")))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable())

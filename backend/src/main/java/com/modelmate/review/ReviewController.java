@@ -29,6 +29,13 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    @GetMapping("/api/v1/reviews/recent")
+    @Operation(summary = "Latest reviews and problem reports across all models (home feed)")
+    public java.util.List<com.modelmate.review.dto.ReviewDtos.RecentReviewDto> recent(
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "8") int limit) {
+        return reviewService.recent(limit);
+    }
+
     @GetMapping("/api/v1/models/{modelId}/reviews")
     @Operation(summary = "List visible reviews for a model")
     public PageResponse<ReviewDto> reviews(@PathVariable Long modelId,
