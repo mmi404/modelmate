@@ -40,10 +40,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { sort: sortParam } = await searchParams;
   const sort = sortParam && SORTS.has(sortParam) ? sortParam : "rating";
 
-  const [category, models] = await Promise.all([
-    loadCategory(slug),
-    getCategoryModels(slug, sort),
-  ]);
+  const category = await loadCategory(slug);
+  const models = await getCategoryModels(slug, sort);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

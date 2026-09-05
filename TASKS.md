@@ -147,9 +147,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked (needs in
       star inputs, severity, textarea
 - [x] **Compare `/compare`:** 2–3 model pickers, side-by-side rating table
 - [ ] **Leaderboard `/leaderboard`:** ranked table, category filter, top-3 highlight
-- [ ] **Community `/community`:** discussion list, tag filter, stats sidebar, tag cloud
-- [ ] **Discussion detail `/community/[id]`:** thread, replies, nested reply, voting
-- [ ] **New discussion `/community/new`**
+- [x] **Community `/community`:** discussion list, tag filter, stats sidebar, tag cloud
+- [x] **Discussion detail `/community/[id]`:** thread, replies, nested reply, voting
+- [x] **New discussion `/community/new`**
 - [x] **Submit model `/submit-model`**
 - [ ] **Profile `/profile` + `/users/[id]`:** info + contributions list
 - [ ] **Admin `/admin`:** pending submissions, approve/reject, hide reviews, stats
