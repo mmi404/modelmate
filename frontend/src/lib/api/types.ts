@@ -181,3 +181,46 @@ export interface VoteResult {
   downvoteCount: number;
   myVote: number | null;
 }
+
+export type ContributionType = "REVIEW" | "PROBLEM" | "DISCUSSION" | "REPLY";
+
+export interface ContributionDto {
+  type: ContributionType;
+  id: number;
+  title: string | null;
+  snippet: string | null;
+  modelSlug: string | null;
+  discussionId: number | null;
+  severity: Severity | null;
+  createdAt: string;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  pendingModels: number;
+  approvedModels: number;
+  rejectedModels: number;
+  totalReviews: number;
+  totalProblems: number;
+  totalDiscussions: number;
+}
+
+export interface PendingModelDto {
+  id: number;
+  name: string;
+  slug: string;
+  creator: string | null;
+  categoryName: string;
+  categorySlug: string;
+  description: string | null;
+  websiteUrl: string | null;
+  submitterName: string;
+  submittedAt: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  avatarUrl?: string;
+}
